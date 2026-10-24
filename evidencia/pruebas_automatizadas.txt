@@ -1,0 +1,11 @@
+test_4x4_generado (test_lights_out.PruebasLightsOut.test_4x4_generado) ... ok
+test_casos_basicos (test_lights_out.PruebasLightsOut.test_casos_basicos) ... ok
+test_exhaustivo_1x1_2x2 (test_lights_out.PruebasLightsOut.test_exhaustivo_1x1_2x2) ... ok
+test_incompatible (test_lights_out.PruebasLightsOut.test_incompatible) ... ok
+test_invalidas (test_lights_out.PruebasLightsOut.test_invalidas) ... ok
+test_multiples_soluciones (test_lights_out.PruebasLightsOut.test_multiples_soluciones) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK

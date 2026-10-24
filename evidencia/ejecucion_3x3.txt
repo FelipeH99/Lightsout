@@ -1,0 +1,12 @@
+EJECUCIÓN REAL: TABLERO 3 x 3
+Tablero inicial:
+  0 1 0
+  1 1 0
+  0 0 1
+Vector solución: [0, 0, 0, 0, 1, 0, 0, 0, 1]
+Posiciones a pulsar: [(2, 2), (3, 3)]
+Tablero final:
+  0 0 0
+  0 0 0
+  0 0 0
+Verificación: True

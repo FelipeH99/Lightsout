@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lights Out — Álgebra Aplicada</title>
+  <style>
+    :root { --fondo:#101b14; --panel:#1b2b20; --texto:#f1fff4; --apagada:#238447; --encendida:#d93636; --sugerida:#9cffb0; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; color:var(--texto); background:var(--fondo); font:16px system-ui,sans-serif; }
+    main { width:min(560px,100%); padding:28px; text-align:center; border-radius:18px; background:var(--panel); box-shadow:0 16px 40px #0005; }
+    h1 { margin-top:0; } p { color:#b9c7dc; }
+    .controles { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:22px 0; }
+    button, select { border:0; border-radius:9px; padding:10px 14px; font:inherit; cursor:pointer; }
+    button { color:#102033; background:var(--sugerida); font-weight:700; } button.secundario { background:#d7dfeb; }
+    select { background:#fff; }
+    #tablero { display:grid; gap:8px; width:min(390px,100%); margin:24px auto; }
+    .luz { aspect-ratio:1; border:2px solid transparent; border-radius:10px; background:var(--apagada); cursor:pointer; transition:.15s; }
+    .luz.encendida { background:var(--encendida); box-shadow:0 0 18px #d9363699; }
+    .luz.sugerida { border-color:var(--sugerida); transform:scale(.9); }
+    #estado { min-height:28px; font-weight:600; }
+    .leyenda { font-size:.85rem; color:#b9c7dc; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Lights Out</h1>
+    <p>Apagá todas las luces o pedile al álgebra que encuentre una solución.</p>
+    <div class="controles">
+      <label>Tamaño:
+        <select id="tamano"><option>3</option><option>4</option><option>5</option></select>
+      </label>
+      <button id="aleatorio" class="secundario">Aleatorio</button>
+      <button id="resolver">Resolver</button>
+      <button id="reiniciar" class="secundario">Reiniciar</button>
+    </div>
+    <div id="tablero" aria-label="Tablero de Lights Out"></div>
+    <div id="estado">Elegí una luz para comenzar.</div>
+    <div class="leyenda">Rojo: encendida · Verde: apagada · Borde claro: pulsación sugerida</div>
+  </main>
+  <script>
+    let n = 3;
+    let tablero = [];
+    let sugeridas = new Set();
+    const $ = id => document.getElementById(id);
+
+    function nuevaMatriz(valor = 0) { return Array.from({length:n}, () => Array(n).fill(valor)); }
+    function construirSistema() {
+      const total = n*n, A = Array.from({length:total}, () => Array(total).fill(0));
+      const b = tablero.flat();
+      for (let f=0; f<n; f++) for (let c=0; c<n; c++) {
+        const salida=f*n+c;
+        [[0,0],[-1,0],[1,0],[0,-1],[0,1]].forEach(([df,dc]) => {
+          const nf=f+df, nc=c+dc;
+          if (nf>=0 && nf<n && nc>=0 && nc<n) A[salida][nf*n+nc]=1;
+        });
+      }
+      return [A,b];
+    }
+
+    // Eliminación gaussiana sobre GF(2), usando únicamente sumas de filas.
+    function resolverSistema(A,b) {
+      const filas=A.length, columnas=A[0].length;
+      const M=A.map((fila,i) => [...fila,b[i]]), pivotes=[];
+      let fp=0;
+      for (let col=0; col<columnas && fp<filas; col++) {
+        if (!M[fp][col]) {
+          const fuente=M.findIndex((fila,i) => i>fp && fila[col]);
+          if (fuente>=0) M[fp]=M[fp].map((x,i) => x ^ M[fuente][i]);
+        }
+        if (!M[fp][col]) continue;
+        for (let f=0; f<filas; f++) if (f!==fp && M[f][col])
+          M[f]=M[f].map((x,i) => x ^ M[fp][i]);
+        pivotes.push([fp,col]); fp++;
+      }
+      if (M.some(fila => fila.slice(0,columnas).every(x=>!x) && fila[columnas])) return null;
+      const solucion=Array(columnas).fill(0);
+      pivotes.forEach(([f,col]) => solucion[col]=M[f][columnas]);
+      return solucion;
+    }
+
+    function pulsar(f,c) {
+      [[0,0],[-1,0],[1,0],[0,-1],[0,1]].forEach(([df,dc]) => {
+        const nf=f+df,nc=c+dc;
+        if(nf>=0&&nf<n&&nc>=0&&nc<n) tablero[nf][nc]^=1;
+      });
+      const indice=f*n+c;
+      // Al pulsar una sugerencia, quitamos solo esa marca y conservamos las demás.
+      sugeridas.delete(indice);
+      dibujar();
+      if (tablero.flat().every(x=>!x)) {
+        sugeridas.clear();
+        dibujar();
+        $('estado').textContent='¡Ganaste! El tablero está apagado.';
+      } else if (sugeridas.size) {
+        $('estado').textContent=`Índices restantes: ${coordenadas([...sugeridas])}`;
+      } else {
+        $('estado').textContent='Tablero actualizado.';
+      }
+    }
+
+    function aplicarVector(pulsaciones) {
+      tablero=nuevaMatriz();
+      pulsaciones.forEach((pulsada,i) => {
+        if (!pulsada) return;
+        const f=Math.floor(i/n), c=i%n;
+        [[0,0],[-1,0],[1,0],[0,-1],[0,1]].forEach(([df,dc]) => {
+          const nf=f+df,nc=c+dc;
+          if(nf>=0&&nf<n&&nc>=0&&nc<n) tablero[nf][nc]^=1;
+        });
+      });
+    }
+
+    function dibujar() {
+      const vista=$('tablero'); vista.style.gridTemplateColumns=`repeat(${n},1fr)`; vista.innerHTML='';
+      tablero.flat().forEach((valor,i) => {
+        const boton=document.createElement('button'); boton.className='luz'+(valor?' encendida':'')+(sugeridas.has(i)?' sugerida':'');
+        boton.ariaLabel=`Fila ${Math.floor(i/n)+1}, columna ${i%n+1}`; boton.onclick=()=>pulsar(Math.floor(i/n),i%n); vista.appendChild(boton);
+      });
+    }
+
+    function preparar(t) { n=t; tablero=nuevaMatriz(); sugeridas.clear(); dibujar(); $('estado').textContent='Elegí una luz para comenzar.'; }
+    function coordenadas(indices) {
+      return indices.map(i => `(${Math.floor(i/n)+1},${i%n+1})`).join(', ');
+    }
+    $('tamano').onchange=e=>preparar(Number(e.target.value));
+    $('reiniciar').onclick=()=>preparar(n);
+    $('aleatorio').onclick=()=>{
+      // Generamos pulsaciones y las aplicamos al tablero apagado: siempre hay solución.
+      const pulsaciones=Array.from({length:n*n},()=>Math.random()<.5?0:1);
+      aplicarVector(pulsaciones);
+      sugeridas.clear(); dibujar(); $('estado').textContent='Tablero resoluble generado.';
+    };
+    $('resolver').onclick=()=>{ const [A,b]=construirSistema(), solucion=resolverSistema(A,b); sugeridas=new Set(); if(solucion===null) $('estado').textContent='Este tablero no tiene solución.'; else { solucion.forEach((x,i)=>x&&sugeridas.add(i)); const indices=[...sugeridas]; $('estado').textContent=indices.length ? `Índices a pulsar: ${coordenadas(indices)}` : 'El tablero ya está apagado.'; } dibujar(); };
+    preparar(3);
+  </script>
+</body>
+</html>
