@@ -1,10 +1,14 @@
 # Lights Out
 
-Este programa modela Lights Out como `Ax=b` sobre `GF(2)`. `main.py` construye la matriz, resuelve con eliminación gaussiana binaria y verifica las pulsaciones.
+El programa resuelve el juego Lights Out usando sistemas lineales sobre los
+ceros y unos. El archivo `main.py` construye la matriz, aplica eliminación
+gaussiana módulo 2 y comprueba la solución encontrada.
 
-La eliminación usa únicamente sumas de filas módulo 2 (`Fi <- Fi + Fj`), sin intercambiar filas. Si aparece una fila nula con término independiente 1, el sistema es incompatible y se devuelve `None`. Si hay variables libres, se fijan en cero y se devuelve una solución particular.
+La eliminación usa sumas de filas (`Fi <- Fi + Fj`) y no intercambia filas.
+Si el sistema no tiene solución, la función devuelve `None`. Cuando hay
+variables libres, devuelve una solución posible fijándolas en cero.
 
-Ejecutar:
+## Ejecutar el programa
 
 ```text
 python main.py
@@ -14,13 +18,11 @@ python evidencia\generar_evidencia.py
 powershell -ExecutionPolicy Bypass -File evidencia\generar_imagenes.ps1
 ```
 
-`generar_resultados.py` busca por enumeración un tablero incompatible 4x4,
-calcula rangos sobre GF(2) y genera `resultados_pruebas.txt` y
-`resultados_informe.md` con la salida real.
+`generar_resultados.py` busca un caso incompatible, calcula rangos sobre GF(2)
+y actualiza los archivos de resultados.
 
-Los scripts de `evidencia/` generan los registros y las imágenes PNG para el
-informe. Las imágenes son representaciones tipográficas de salidas reales,
-no capturas de pantalla de una terminal.
+Los scripts de `evidencia/` guardan los registros de ejecución y generan las
+imágenes que se pueden insertar en el informe.
 
 ## Interfaz web
 
