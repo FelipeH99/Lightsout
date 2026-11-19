@@ -1,33 +1,41 @@
-# Lights Out
+# Lights Out · Álgebra lineal aplicada
 
-El programa resuelve el juego Lights Out usando sistemas lineales sobre los
-ceros y unos. El archivo `main.py` construye la matriz, aplica eliminación
-gaussiana módulo 2 y comprueba la solución encontrada.
+Juego de luces con un solucionador basado en eliminación gaussiana sobre **GF(2)**: cada pulsación alterna una celda y sus vecinas, y el objetivo es apagar el tablero.
 
-La eliminación usa sumas de filas (`Fi <- Fi + Fj`) y no intercambia filas.
-Si el sistema no tiene solución, la función devuelve `None`. Cuando hay
-variables libres, devuelve una solución posible fijándolas en cero.
+**Python · JavaScript · HTML/CSS · unittest**
 
-## Ejecutar el programa
+## Probarlo
 
-```text
-python main.py
-python -m unittest -v
-python generar_resultados.py
-python evidencia\generar_evidencia.py
-powershell -ExecutionPolicy Bypass -File evidencia\generar_imagenes.ps1
+Abrí [`index.html`](index.html) en un navegador, o serví la carpeta:
+
+```sh
+git clone https://github.com/FelipeH99/Lightsout.git
+cd Lightsout
+python3 -m http.server 8080
 ```
 
-`generar_resultados.py` busca un caso incompatible, calcula rangos sobre GF(2)
-y actualiza los archivos de resultados.
+Entrá en `http://localhost:8080`. Podés elegir tamaño, cambiar luces, generar un tablero y pedir una solución. Los tableros aleatorios de la interfaz se construyen mediante pulsaciones válidas y son resolubles.
 
-Los scripts de `evidencia/` guardan los registros de ejecución y generan las
-imágenes que se pueden insertar en el informe.
+## Algoritmo y validación
 
-## Interfaz web
+El problema se expresa como `A · x = b (mod 2)`. La matriz representa qué luces cambia cada pulsación. El solucionador usa sumas de filas sin intercambiarlas; devuelve `None` si el sistema es incompatible. Si existen variables libres, las fija en cero para obtener una solución, que no necesariamente minimiza la cantidad de pulsaciones.
 
-Abrí `index.html` directamente en un navegador. Permite elegir el tamaño,
-encender y apagar luces, generar un tablero aleatorio, reiniciar y mostrar
-las posiciones que propone el mismo algoritmo de eliminación gaussiana.
-El botón “Aleatorio” aplica pulsaciones aleatorias a un tablero apagado, por
-lo que todos los tableros generados desde la interfaz son resolubles.
+```sh
+python3 main.py
+python3 -m unittest -v
+```
+
+No requiere paquetes externos para el solucionador ni sus pruebas.
+
+## Evidencia y documentación
+
+- [Informe](InformeLightsout.pdf): desarrollo del trabajo.
+- [Resultados](resultados_informe.md): casos y análisis de rangos.
+- [`test_lights_out.py`](test_lights_out.py): pruebas del solucionador.
+- [`evidencia/`](evidencia/): registros e imágenes de ejecución.
+
+`python3 generar_resultados.py` regenera resultados. Los scripts de imágenes en PowerShell son opcionales y no se necesitan para jugar ni ejecutar las pruebas.
+
+## Qué aporta al perfil
+
+Un ejemplo acotado de modelado matemático, implementación de algoritmos y verificación automática. Complementa los proyectos de APIs e integración con una muestra de fundamentos.
